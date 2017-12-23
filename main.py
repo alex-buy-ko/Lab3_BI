@@ -1,13 +1,11 @@
-﻿# VVV222
-
-# -*- coding: utf-8 -*-
-# import initExample ## Add path to library (just for examples; you do not need this)
-
+﻿# -*- coding: utf-8 -*-
+# VVV222
 
 from pyqtgraph.Qt import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 from PyQt4 import Qt
+from dataHandler import dataLoader, calc_kpi1, calc_kpi2, calc_kpi3, x
 #####################################################
 #####################################################
 KPI_1 = 'Абсолютный прирост'
@@ -38,7 +36,6 @@ high_plot = win.addPlot(title="Люксовый класс")
 for plot_name in [low_plot, mid_plot, high_plot]:
     plot_name.showGrid(x=True, y=True)
     plot_name.setLabel('bottom', "Время", units='Месяцы')
-
     plot_name.enableAutoRange('xy')
     
 #####################################################
@@ -74,8 +71,8 @@ def buttonClicked(kpi_prm):
     high_plot.plot(x, y3,pen='g')
 
     
-# win.nextRow()
-# win.nextCol()
+low_cat, mid_cat, high_cat = dataLoader()
+
 button1 = QtGui.QPushButton(KPI_1)
 button1.setToolTip("""Абсолютный прирост - Абсолютный прирост необходим для расчета темпа прироста. \nОпределяется в разностном сопоставлении двух уровней ряда динамики в единицах измерения исходной информации.""")
 button1.clicked.connect(lambda : buttonClicked(KPI_1))
@@ -94,15 +91,11 @@ my_btn_style = """
     QPushButton:!hover { background-color: rgb(204 153 102); }
     QPushButton:pressed { background-color: rgb(153, 153, 255); }
 """
-
 button1.setStyleSheet(my_btn_style)
 button2.setStyleSheet(my_btn_style)
 button3.setStyleSheet(my_btn_style)
 
 hbox = QtGui.QHBoxLayout()  
-
-# hbox.setStretch(0,0)
-
 proxy1= QtGui.QGraphicsProxyWidget()
 proxy2= QtGui.QGraphicsProxyWidget()
 proxy3= QtGui.QGraphicsProxyWidget()
@@ -121,68 +114,7 @@ pp1.addItem(proxy3,3,0)
 
 #####################################################
 #####################################################
-################# ВЫЧИСЛЯЮЩИЙ КЛАСС #################
-#####################################################
-#####################################################
-import pandas as pd
-import matplotlib.pyplot as plt
-try:
-    fixed_df = pd.read_csv('data\\BuisnesData.csv', sep=';',index_col='Mounth')
-    # Y
-    low_cat = [int(fixed_df['Low'][i]) for i in range(len(fixed_df['Low']))]
-    mid_cat = [int(fixed_df['Middle'][i]) for i in range(len(fixed_df['Middle']))]
-    high_cat = [int(fixed_df['High'][i]) for i in range(len(fixed_df['High']))]
-    # X
-    mnth = [i for i in fixed_df.index]
-except:
-    print("Введён некорректный формат данных")
-#     lbl = pg.GraphicsWindow(title="ERROR")
-#     lbl.setFixedSize(100, 100)
-#     lbl.setWindowTitle('Сообщение об ошибке!')
 
-    lbl1 = QtGui.QLabel('Введены некорректные данные')
-    
-#     lbl.setOpenExternalLinks(True)
-    lbl1.resize(450,150)
-    lbl1.move(800, 600)
-    lbl1.setText("<h2>Введены некорректные данные.</h2> \nПопробуйте закрыть программу и <p>загрузить <b>корректные</b> данные.</p>")
-    lbl1.show()
-    
-def calc_kpi1(y):
-    dy = []
-    dy.append(0)
-    for i in range(1,len(y)):
-        dy.append(y[i] - y[i-1])
-    return dy
-
-def calc_kpi2(y):
-    dy = calc_kpi1(y)
-    d_dy = []
-    d_dy.append(0)
-    
-    for i in range(1,len(y)):
-
-        if y[i-1] != 0:
-            d_dy.append(round(dy[i]/y[i-1]*100,2))
-        else:
-            d_dy.append(0)
-    return d_dy
-
-
-def calc_kpi3(y):
-    dy = calc_kpi1(y)
-    up_dy = []
-    up_dy.append(0)
-    for i in range(1,len(y)):
-        if y[0] != 0:
-            up_dy.append(round(dy[i]/y[0]*100,2))
-        else:
-            up_dy.append(0)
-    return up_dy
-x = [i for i in range(1,13)] 
-
-###################################
-###################################
 
 
 # y1 = calc_kpi3(low_cat)
@@ -196,8 +128,9 @@ x = [i for i in range(1,13)]
 
 
 
-## Start Qt event loop unless running in interactive mode or using pyside.
+
 if __name__ == '__main__':
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         QtGui.QApplication.instance().exec_()
+        sys.exit()
